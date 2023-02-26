@@ -47,7 +47,9 @@ ipcMain.on('dir-channel', async (event, arg) => {
 
   const fileStats: fs.Stats[] = [];
   // eslint-disable-next-line prettier/prettier
-  const fileObjs = fs.readdirSync(`C:/Users/Lucien/Pictures/CV`, { withFileTypes: true });
+  const fileObjs = fs.readdirSync(`C:/Users/Lucien/Pictures/CV`, {
+    withFileTypes: true,
+  });
   console.log('\nCurrent directory files:');
   fileObjs.forEach((file: any) => {
     // console.log(file);
@@ -67,7 +69,10 @@ ipcMain.on('dir-channel', async (event, arg) => {
     mainWindow.webContents.send('update-files', fileStats);
     // Use fs.readFile() method to read the file
     // eslint-disable-next-line prettier/prettier
-fs.readFile(`C:/Users/Lucien/Pictures/CV/${file.name}`, 'utf8', function(err, data){
+    fs.readFile(
+      `C:/Users/Lucien/Pictures/CV/${file.name}`,
+      'utf8',
+      function (err, data) {
         // Display the file content
         // console.log(data);
       }
