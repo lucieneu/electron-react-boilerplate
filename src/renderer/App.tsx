@@ -3,24 +3,47 @@ import { useEffect, useState, useRef } from 'react';
 import icon from '../../assets/icon.svg';
 import './App.css';
 import { useListener } from './src/hooks/electron';
+import { FileImage, PhotoPreviewer } from './src/components/PhotoPreviewer';
+import { allowImgTypes } from './src/config/static';
 
 // window.electronStore.directory.fetch(`C:/Users/Lucien/Pictures/CV`);
 
-function FileImage({ url }) {
-  return <img style={{ width: 50, height: 50 }} src={`localasset://${url}`} />;
+function DirInput({ onSubmit }: { onSubmit: Function }) {
+  const [state, setState] = useState(
+    `D:/backup oneplus camera/archive-delete 2017-2018`
+  );
+  const handleClick = () => {
+    onSubmit(state);
+  };
+
+  useEffect(() => {
+    handleClick();
+  }, []);
+  return (
+    <div>
+      <input
+        type="text"
+        value={state}
+        onChange={(e) => setState(e.target.value)}
+      />
+      <button type="button" onClick={handleClick}>
+        Click.
+      </button>
+    </div>
+  );
 }
 
 function Hello() {
   const [searchDir, setSearchDir] = useState();
   const [direct, setDirect] = useState();
 
-  const handleFetchDirectory = () => {
+  const handleFetchDirectory = (dir = '') => {
     console.log('start');
-    const res = window.electronStore.directory.fetch(
-      false
-        ? `C:/Users/Lucien/Pictures/CV`
-        : `D:/backup oneplus camera/archive-delete 2017-2018`
-    );
+    // false
+    //   ? `C:/Users/Lucien/Pictures/CV`
+    //   : `D:/backup oneplus camera/archive-delete 2017-2018`;
+
+    const res = window.electronStore.directory.fetch(dir);
     console.log('end', res);
     // console.log(
     //   window.electronStore.directory.getStats(
@@ -29,8 +52,17 @@ function Hello() {
     // );
   };
   useListener((directory) => {
-    console.log('RECEIVED1', directory);
-    setDirect(directory);
+    console.log(
+      'RECEIVED1',
+      directory,
+      directory.result.filter((file) => allowImgTypes.includes(file.extension))
+    );
+    setDirect({
+      ...directory,
+      result: directory.result.filter((file) =>
+        allowImgTypes.includes(file.extension)
+      ),
+    });
   }, 'test-luc');
   // useEffect(() => {
   //   // Listen for the event
@@ -49,48 +81,17 @@ function Hello() {
   // }, []);
 
   console.log(searchDir, '- ', direct);
-  const inputRef = useRef();
-
-  useEffect(() => {
-    inputRef.current.webkitdirectory = true;
-
-    inputRef.current.directory = true;
-  }, []);
 
   return (
     <div>
+      {/* <FileImage url={`${direct.directory}/${direct.result[0].name}`} /> */}
       {direct && (
-        <FileImage url={`${direct.directory}/${direct.result[0].name}`} />
+        <PhotoPreviewer
+          directory={direct.directory}
+          photoList={direct.result}
+        />
       )}
-      <input
-        ref={inputRef}
-        type="file"
-        onChange={(e) => {
-          console.log(URL.createObjectURL(e.target.files));
-          setSearchDir(e.target.files);
-        }}
-        webkitdirectory
-        webkitEntries
-        webkitentries
-        multiple
-      />
-      <button
-        type="button"
-        onClick={() => {
-          window.electronStore.store.set('foo', 'bar');
-
-          console.log(
-            window.electronStore.directory.getStats(
-              `C:/Users/Lucien/Pictures/CV`
-            )
-          );
-        }}
-      >
-        GET.
-      </button>
-      <button type="button" onClick={handleFetchDirectory}>
-        FETCH.
-      </button>
+      <DirInput onSubmit={handleFetchDirectory} />
     </div>
   );
 }
