@@ -25,5 +25,5 @@ function Button({ href, children }: ButtonPropsExtend) {
   );
 }
 
-Link.Button = Button;
+Link.Button = Link;
 export default Link;

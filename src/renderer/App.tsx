@@ -1,10 +1,22 @@
-import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
+import {
+  MemoryRouter as Router,
+  Routes,
+  Route,
+  useRoutes,
+  RouterProvider,
+  BrowserRouter,
+} from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import icon from '../../assets/icon.svg';
 import './App.css';
 import { useListener } from './src/hooks/electron';
-import { FileImage, PhotoPreviewer } from './src/components/PhotoPreviewer';
+import {
+  FileImage,
+  PhotoPreviewer,
+} from './src/features/photoViewer/components/PhotoPreviewer';
 import { allowImgTypes } from './src/config/static';
+import mainRoute from './src/routes';
+import MainRouteProvider from './src/routes';
 
 // window.electronStore.directory.fetch(`C:/Users/Lucien/Pictures/CV`);
 
@@ -98,10 +110,8 @@ function Hello() {
 
 export default function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Hello />} />
-      </Routes>
-    </Router>
+    <BrowserRouter>
+      <MainRouteProvider />
+    </BrowserRouter>
   );
 }

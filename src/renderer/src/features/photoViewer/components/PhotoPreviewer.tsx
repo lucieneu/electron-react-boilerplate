@@ -42,7 +42,7 @@ function PhotoPreviewer({ directory, photoList = [] }: props) {
   //   })}
   // </div>;
 
-  const parentRef = useRef();
+  const parentRef = useRef(null);
 
   const columnVirtualizer = useVirtualizer({
     horizontal: true,
@@ -89,6 +89,7 @@ function PhotoPreviewer({ directory, photoList = [] }: props) {
                   virtualColumn.index % 2 ? 'ListItemOdd' : 'ListItemEven'
                 }
                 onClick={() => setSelected(url)}
+                data-index={virtualColumn.index}
                 aria-hidden="true"
                 ref={columnVirtualizer.measureElement}
                 style={{
