@@ -1,5 +1,10 @@
 import { ElectronHandler } from 'main/preload';
 
+type copySettings = {
+  file: string;
+  source: string;
+  folders: any[];
+};
 declare global {
   // eslint-disable-next-line no-unused-vars
   interface Window {
@@ -13,6 +18,7 @@ declare global {
       directory: {
         fetch: (directoryUrl: string) => void;
         getStats: (directoryUrl: string) => void;
+        copyFileToDirectory: (copyFileSettings: copySettings) => void;
       };
     };
   }

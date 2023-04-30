@@ -2,7 +2,8 @@ import { createBrowserRouter } from 'react-router-dom';
 import { NotFound } from './NotFound';
 import { PhotoViewer } from './PhotoViewer';
 import { Root } from './Root';
-import { SelectDir } from './SelectDir';
+import { SelectDirectory } from './SelectDirectory';
+import { LabelCreation } from './LabelCreation';
 
 const routePhotoViewer = [
   {
@@ -15,7 +16,12 @@ const routePhotoViewer = [
       },
       {
         path: 'directory',
-        element: <SelectDir />,
+        element: <SelectDirectory />,
+      },
+
+      {
+        path: 'label-creation',
+        element: <LabelCreation />,
       },
 
       // {

@@ -44,6 +44,9 @@ contextBridge.exposeInMainWorld('electronStore', {
     // Other method you want to add like has(), reset(), etc.
   },
   directory: {
+    copyFileToDirectory(copyFileSettings) {
+      ipcRenderer.send('electron-directory-copy-file', copyFileSettings);
+    },
     fetch(directoryUrl) {
       ipcRenderer.send('electron-directory-fetch', directoryUrl);
     },

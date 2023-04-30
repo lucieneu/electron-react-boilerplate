@@ -18,6 +18,10 @@
 import { useEffect, useState } from 'react';
 import { allowImgTypes } from 'renderer/src/config/static';
 import { useListener } from 'renderer/src/hooks/electron';
+import { useKeyPress } from 'renderer/src/hooks/utils';
+import { useNavigate } from 'react-router-dom';
+import { useAppSelector } from 'renderer/src/hooks/redux';
+import { selectPath } from 'renderer/src/stores/directorySlice';
 import { PhotoPreviewer } from '../components/PhotoPreviewer';
 
 // window.electronStore.directory.fetch(`C:/Users/Lucien/Pictures/CV`);
@@ -25,6 +29,13 @@ import { PhotoPreviewer } from '../components/PhotoPreviewer';
 function Hello() {
   const [searchDir, setSearchDir] = useState();
   const [direct, setDirect] = useState();
+  const path = useAppSelector(selectPath);
+
+  useEffect(() => {
+    console.log('start');
+    const res = window.electronStore.directory.fetch(path);
+    console.log('end', res);
+  }, [path]);
 
   useListener((directory) => {
     console.log(
@@ -54,9 +65,10 @@ function Hello() {
   //     subscription();
   //   };
   // }, []);
-
   console.log(searchDir, '- ', direct);
-
+  // useEffect(() => {
+  //   if (reset) navigate('/');
+  // }, []);
   return (
     <div>
       {/* <FileImage url={`${direct.directory}/${direct.result[0].name}`} /> */}

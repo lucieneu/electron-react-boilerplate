@@ -12,7 +12,15 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain, protocol } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import fs, { promises as promiseFs } from 'fs';
+import fs, {
+  access,
+  accessSync,
+  constants,
+  copyFile,
+  mkdir,
+  mkdirSync,
+  promises as promiseFs,
+} from 'fs';
 import Store from 'electron-store';
 import url from 'url';
 import MenuBuilder from './menu';
@@ -192,6 +200,57 @@ ipcMain.on('electron-read-file', async (event, path) => {
   });
 });
 
+const joinFilePath = (dir, fileName) => `${dir}/${fileName}`;
+
+const handleCopyFile = (fileName, sourcePath, destinationPath) => {
+  function callback(err) {
+    if (err) {
+      console.error('The file could not be copied');
+      throw err;
+    }
+    console.log(
+      `${joinFilePath(sourcePath, fileName)} was copied to ${joinFilePath(
+        destinationPath,
+        fileName
+      )}`
+    );
+  }
+  console.log(
+    'handleCopyFile',
+    joinFilePath(sourcePath, fileName),
+    joinFilePath(destinationPath, fileName)
+  );
+  // By using COPYFILE_EXCL, the operation will fail if destination.txt exists.
+  return copyFile(
+    joinFilePath(sourcePath, fileName),
+    joinFilePath(destinationPath, fileName),
+    constants.COPYFILE_EXCL,
+    callback
+  );
+};
+const folderExists = (directory, createIfEmpty) => {
+  try {
+    accessSync(directory, constants.F_OK);
+  } catch (err) {
+    // check if directory exists
+    if (err && createIfEmpty) {
+      mkdirSync(directory, { recursive: true });
+    }
+  }
+};
+ipcMain.on('electron-directory-copy-file', async (event, copyFileSettings) => {
+  console.log('received copy call, settings:', copyFileSettings);
+  const { file, source, destination, folders } = copyFileSettings;
+
+  folders.map(async (folder: string) => {
+    const _destination = `${destination || source}/${folder}`;
+
+    folderExists(_destination, true);
+
+    handleCopyFile(file, source, _destination);
+  });
+});
+
 ipcMain.on('electron-directory-fetch', async (event, directoryUrl) => {
   console.log('start electron-directory-fetch');
   const list: {
@@ -212,8 +271,6 @@ ipcMain.on('electron-directory-fetch', async (event, directoryUrl) => {
           if (error) {
             console.log(error);
           } else {
-            // console.log('Stats object for: example_file.txt');
-            // console.log(_stats);
             const res = {
               name: file.name,
               extension: file.name.split('.').slice(-1)[0],

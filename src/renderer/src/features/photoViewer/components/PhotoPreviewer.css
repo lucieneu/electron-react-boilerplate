@@ -1,0 +1,8 @@
+.photoViewer{display: flex;
+justify-content: space-between;
+flex-wrap: nowrap;
+flex-direction: column;
+align-items: center;
+
+height: 100vh;
+width: 100vw;}
