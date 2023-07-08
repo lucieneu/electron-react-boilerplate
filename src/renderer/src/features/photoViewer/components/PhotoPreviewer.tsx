@@ -26,22 +26,22 @@ type props = {
   directory: any;
 };
 
-const useLabelSet = (filePath, key, setter) => {
-  const pressed = useKeyPress(key);
+// const useLabelSet = (filePath, key, setter) => {
+//   const pressed = useKeyPress(key);
 
-  useEffect(() => {
-    if (pressed)
-      setter((prev) => {
-        if (!prev[filePath]) prev[filePath] = new Set();
-        console.log(prev[filePath].has(key));
-        prev[filePath].has(key)
-          ? prev[filePath].delete(key)
-          : prev[filePath].add(key);
+//   useEffect(() => {
+//     if (pressed)
+//       setter((prev) => {
+//         if (!prev[filePath]) prev[filePath] = new Set();
+//         console.log(prev[filePath].has(key));
+//         prev[filePath].has(key)
+//           ? prev[filePath].delete(key)
+//           : prev[filePath].add(key);
 
-        return { ...prev };
-      });
-  }, [pressed]);
-};
+//         return { ...prev };
+//       });
+//   }, [pressed]);
+// };
 
 function useLabelKeyPressed(targetKeys: string[], filePath: string): boolean {
   const [labelPressed, setLabelPressed] = useState({});
@@ -51,7 +51,7 @@ function useLabelKeyPressed(targetKeys: string[], filePath: string): boolean {
   // If pressed key is our target key then set to true
   function downHandler({ key }: { key: string }): void {
     const _filePath = filePathRef.current;
-    console.log('downHandler', filePath, targetKeys, _filePath);
+    // console.log('downHandler', filePath, targetKeys, _filePath);
 
     if (targetKeys.includes(key)) {
       setLabelPressed((prev) => {
@@ -90,22 +90,22 @@ function useLabelKeyPressed(targetKeys: string[], filePath: string): boolean {
   return labelPressed;
 }
 
-const useLabelSets = (filePath, keys, setter) => {
-  const keyPressed = useKeysPress(labelList.map(({ keyPress }) => keyPress));
+// const useLabelSets = (filePath, keys, setter) => {
+//   const keyPressed = useKeysPress(labelList.map(({ keyPress }) => keyPress));
 
-  useEffect(() => {
-    if (pressed)
-      setter((prev) => {
-        if (!prev[filePath]) prev[filePath] = new Set();
-        console.log(prev[filePath].has(key));
-        prev[filePath].has(key)
-          ? prev[filePath].delete(key)
-          : prev[filePath].add(key);
+//   useEffect(() => {
+//     if (pressed)
+//       setter((prev) => {
+//         if (!prev[filePath]) prev[filePath] = new Set();
+//         console.log(prev[filePath].has(key));
+//         prev[filePath].has(key)
+//           ? prev[filePath].delete(key)
+//           : prev[filePath].add(key);
 
-        return { ...prev };
-      });
-  }, [pressed]);
-};
+//         return { ...prev };
+//       });
+//   }, [pressed]);
+// };
 
 function PhotoPreviewer({ directory, photoList = [] }: props) {
   const spacePressed = useKeyPress(' ');
@@ -122,8 +122,8 @@ function PhotoPreviewer({ directory, photoList = [] }: props) {
 
   const [selected, setSelected] = useState();
 
-  const [linkedLabels, setLinkedLabels] = useState({});
-  const [indexWidth, setIndexWidth] = useState({});
+  // const [linkedLabels, setLinkedLabels] = useState({});
+  // const [indexWidth, setIndexWidth] = useState({});
 
   useEffect(() => {
     if (spacePressed) {
@@ -142,30 +142,54 @@ function PhotoPreviewer({ directory, photoList = [] }: props) {
     labelList.map(({ keyPress }) => keyPress),
     selected
   );
-  useLabelSet(selected, 'a', setLinkedLabels);
-  useLabelSet(selected, 's', setLinkedLabels);
-  useLabelSet(selected, 'd', setLinkedLabels);
+  // useLabelSet(selected, 'a', setLinkedLabels);
+  // useLabelSet(selected, 's', setLinkedLabels);
+  // useLabelSet(selected, 'd', setLinkedLabels);
 
   // console.log(spacePressed);
   // console.log(selected);
   // console.log(linkedLabels);
-  console.log({ urlMappedLabels, selected });
+  console.log({ urlMappedLabels, selected, labelList });
 
   const handleSave = () => {
+    // based on keyPress
+    const labelMap = labelList.reduce((acc, curr) => {
+      acc[curr.keyPress] = curr;
+      return acc;
+    }, {});
     const dirLength = directory.length;
-    Object.keys(linkedLabels).forEach((filePath) => {
-      console.log('filepath', filePath);
-      if (linkedLabels[filePath].size) {
+    Object.keys(urlMappedLabels).forEach((filePath) => {
+      if (urlMappedLabels[filePath].size) {
+        const folderNames = [];
+        urlMappedLabels[filePath].forEach((keyPressed) => {
+          folderNames.push(labelMap[keyPressed].name);
+        });
+        console.log('folderNames', folderNames);
         const copySettings = {
           file: filePath.slice(dirLength + 1),
           source: directory,
-          folders: [...linkedLabels[filePath]],
+          folders: folderNames,
         };
-        console.log('copySettings', copySettings);
+        console.log('copySettings a', copySettings);
 
         window.electronStore.directory.copyFileToDirectory(copySettings);
       }
     });
+
+    // const dirLength = directory.length;
+    // Object.keys(linkedLabels).forEach((filePath) => {
+    //   console.log('filepath', filePath);
+    //   if (linkedLabels[filePath].size) {
+    //     const copySettings = {
+    //       file: filePath.slice(dirLength + 1),
+    //       source: directory,
+    //       folders: [...linkedLabels[filePath]],
+    //     };
+    //     console.log('copySettings b', copySettings);
+
+    //     // window.electronStore.directory.copyFileToDirectory(copySettings);
+    //   }
+    // });
   };
 
   const colorsMap = useMemo(
