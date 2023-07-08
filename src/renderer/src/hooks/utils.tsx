@@ -48,5 +48,34 @@ function useKeyPress(targetKey: string): boolean {
   }, []); // Empty array ensures that effect is only run on mount and unmount
   return keyPressed;
 }
+function useKeysPress(targetKeys: string[]): boolean {
+  // State for keeping track of whether key is pressed
+  const [keyPressed, setKeyPressed] = useState([]);
+  // If pressed key is our target key then set to true
+  function downHandler({ key }: { key: string }): void {
+    if (targetKeys.includes(key)) {
+      setKeyPressed((prev) => (!prev.includes(key) ? [...prev, key] : prev));
+    }
+  }
+  // If released key is our target key then set to false
+  const upHandler = ({ key }: { key: string }): void => {
+    if (targetKeys.includes(key)) {
+      setKeyPressed((prev) =>
+        prev.includes(key) ? prev.filter((_key) => _key !== key) : prev
+      );
+    }
+  };
+  // Add event listeners
+  useEffect(() => {
+    window.addEventListener('keydown', downHandler);
+    window.addEventListener('keyup', upHandler);
+    // Remove event listeners on cleanup
+    return () => {
+      window.removeEventListener('keydown', downHandler);
+      window.removeEventListener('keyup', upHandler);
+    };
+  }, []); // Empty array ensures that effect is only run on mount and unmount
 
-export { useEvent, useKeyPress };
+  return keyPressed;
+}
+export { useEvent, useKeyPress, useKeysPress };

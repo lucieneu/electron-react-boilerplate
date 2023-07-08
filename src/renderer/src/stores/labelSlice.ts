@@ -8,6 +8,7 @@ export interface LabelCreate {
   color: string;
   name: string;
   id?: string;
+  keyPress?: string;
   active?: boolean;
   softDel?: Date;
   created?: Date;
@@ -18,6 +19,7 @@ export interface Label {
   id: string;
   name: string;
   active: boolean;
+  keyPress: string;
   softDel?: Date;
   created: Date;
   updated: Date;
@@ -44,6 +46,8 @@ const initialState: MyInterface = {
       name: 'deleted',
       active: true,
       color: '#ff0000',
+      keyPress: 'd',
+
       created: new Date('2020-00-0T00:00:00Z'),
       updated: new Date('2020-00-0T00:00:00Z'),
     },
@@ -65,6 +69,7 @@ export const labelSlice = createSlice({
         updated: new Date(),
         active: true,
       };
+      console.log('add', newLabel);
 
       state.dict[newLabel.id] = newLabel;
       state.currentList.push(newLabel.id);

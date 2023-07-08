@@ -26,7 +26,7 @@ import { PhotoPreviewer } from '../components/PhotoPreviewer';
 
 // window.electronStore.directory.fetch(`C:/Users/Lucien/Pictures/CV`);
 
-function Hello() {
+function PhotoViewerPage() {
   const [searchDir, setSearchDir] = useState();
   const [direct, setDirect] = useState();
   const path = useAppSelector(selectPath);
@@ -83,8 +83,6 @@ function Hello() {
 }
 
 function PhotoViewer() {
-  let a;
-  console.log('show photoviewer');
-  return <Hello />;
+  return <PhotoViewerPage />;
 }
 export { PhotoViewer };

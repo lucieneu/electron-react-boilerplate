@@ -5,6 +5,7 @@ import { Label, add, softDelete, update } from 'renderer/src/stores/labelSlice';
 import { Pencil } from 'tabler-icons-react';
 import './LabelRow.css';
 import { Button } from '@mantine/core';
+import { useLogger } from '@mantine/hooks';
 
 function ColorInput({
   hover,
@@ -43,6 +44,7 @@ function LabelRow({ label }: LabelRowProps): ReactElement {
   const isEdit = !!label?.id;
   const [color, setColor] = useState(label?.color ?? '#000000');
   const [name, setName] = useState(label?.name ?? '');
+  const [keyPress, setKeyPress] = useState(label?.keyPress ?? '');
   const [hover, setHover] = useState(false);
   const hoverClass = hover || name.length === 0 ? 'hover' : '';
   const dispatch = useAppDispatch();
@@ -51,18 +53,26 @@ function LabelRow({ label }: LabelRowProps): ReactElement {
     if (label) {
       setColor(label.color);
       setName(label.name);
+      setKeyPress(label.keyPress);
     }
   }, [label]);
 
-  const hasChanges = isEdit && (label.color !== color || label.name !== name);
-  const disabled = !color || !name.length || !hasChanges;
+  const hasChanges =
+    isEdit &&
+    (label.color !== color ||
+      label.name !== name ||
+      label.keyPress !== keyPress);
 
+  const disabled =
+    !color || !name.length || !keyPress.length || (!hasChanges && isEdit);
+  console.log({ color, name, keyPress });
   const handleAdd = () => {
     if (isCreate) {
       dispatch(
         add({
           name,
           color,
+          keyPress,
         })
       );
 
@@ -78,6 +88,7 @@ function LabelRow({ label }: LabelRowProps): ReactElement {
           ...label,
           name,
           color,
+          keyPress,
         })
       );
   };
@@ -100,6 +111,11 @@ function LabelRow({ label }: LabelRowProps): ReactElement {
         })
       );
   };
+
+  const handleKeyPress = (key: string) => {
+    setKeyPress(key.length === 2 ? key[1] : key);
+  };
+
   const createBtn = isCreate && (
     <Button disabled={disabled} onClick={handleClick} compact>
       Add
@@ -130,6 +146,13 @@ function LabelRow({ label }: LabelRowProps): ReactElement {
         hover={hover || name.length === 0}
         color={color}
         setColor={setColor}
+      />
+      <input
+        value={keyPress}
+        className="keyPress"
+        onChange={(e) => {
+          handleKeyPress(e.target.value);
+        }}
       />
       <input
         value={name}
