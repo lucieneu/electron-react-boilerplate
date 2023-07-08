@@ -13,11 +13,10 @@ import { useKeyPress } from 'renderer/src/hooks/utils';
 import { useAppSelector } from 'renderer/src/hooks/redux';
 import { Label, selectCurrentList } from 'renderer/src/stores/labelSlice';
 
-type FileImageType = { url: string; style: any };
+type FileImageProps = { url: string; style: any };
 
 const FileImage = memo(
-  ({ url, style = { maxHeight: 82 } }: FileImageType): ReactElement => {
-    // console.log(url);
+  ({ url, style = { maxHeight: 82 } }: FileImageProps): ReactElement => {
     return (
       <img
         style={style}
@@ -34,23 +33,6 @@ type props = {
   directory: any;
 };
 
-// const useLabelSet = (filePath, key, setter) => {
-//   const pressed = useKeyPress(key);
-
-//   useEffect(() => {
-//     if (pressed)
-//       setter((prev) => {
-//         if (!prev[filePath]) prev[filePath] = new Set();
-//         console.log(prev[filePath].has(key));
-//         prev[filePath].has(key)
-//           ? prev[filePath].delete(key)
-//           : prev[filePath].add(key);
-
-//         return { ...prev };
-//       });
-//   }, [pressed]);
-// };
-
 type PressedLabels = {
   [key: string]: Set<string>;
 };
@@ -62,11 +44,11 @@ function useLabelKeyPressed(
   const [labelPressed, setLabelPressed] = useState<PressedLabels>({});
   const filePathRef = useRef<string | undefined>();
   filePathRef.current = filePath;
+
   // State for keeping track of whether key is pressed
   // If pressed key is our target key then set to true
   function downHandler({ key }: { key: string }): void {
     const newFilePath: string | undefined = filePathRef.current;
-    // console.log('downHandler', filePath, targetKeys, _filePath);
 
     if (newFilePath && targetKeys.includes(key)) {
       setLabelPressed((prev: PressedLabels) => {
@@ -78,50 +60,21 @@ function useLabelKeyPressed(
 
         return { ...prev };
       });
-
-      // setKeyPressed((prev) => (!prev.includes(key) ? [...prev, key] : prev));
     }
   }
 
-  // If released key is our target key then set to false
-  // const upHandler = ({ key }: { key: string }): void => {
-  //   if (targetKeys.includes(key)) {
-  //     setKeyPressed((prev) =>
-  //       prev.includes(key) ? prev.filter((_key) => _key !== key) : prev
-  //     );
-  //   }
-  // };
   // Add event listeners
   useEffect(() => {
     window.addEventListener('keydown', downHandler);
-    // window.addEventListener('keyup', upHandler);
     // Remove event listeners on cleanup
     return () => {
       window.removeEventListener('keydown', downHandler);
-      // window.removeEventListener('keyup', upHandler);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty array ensures that effect is only run on mount and unmount
 
   return labelPressed;
 }
-
-// const useLabelSets = (filePath, keys, setter) => {
-//   const keyPressed = useKeysPress(labelList.map(({ keyPress }) => keyPress));
-
-//   useEffect(() => {
-//     if (pressed)
-//       setter((prev) => {
-//         if (!prev[filePath]) prev[filePath] = new Set();
-//         console.log(prev[filePath].has(key));
-//         prev[filePath].has(key)
-//           ? prev[filePath].delete(key)
-//           : prev[filePath].add(key);
-
-//         return { ...prev };
-//       });
-//   }, [pressed]);
-// };
 
 type LabelMapType = {
   [key: string]: Label;
@@ -133,7 +86,10 @@ type LabelsLinkedProps = {
   labels: Set<string> | undefined;
   colors: ColorsMapType;
 };
-const LabelsLinked = ({ labels, colors }: LabelsLinkedProps) => {
+const LabelsLinked = ({
+  labels,
+  colors,
+}: LabelsLinkedProps): ReactElement[] => {
   const renderColors: string[] = [];
   labels?.forEach((keyPressed: string) => {
     colors[keyPressed].forEach((label: Label) => {
@@ -171,7 +127,6 @@ function PhotoPreviewer({ directory, photoList = [] }: props) {
 
   const [selected, setSelected] = useState<string>('');
 
-  // const [linkedLabels, setLinkedLabels] = useState({});
   // const [indexWidth, setIndexWidth] = useState({});
 
   useEffect(() => {
@@ -191,14 +146,6 @@ function PhotoPreviewer({ directory, photoList = [] }: props) {
     labelList.map(({ keyPress }) => keyPress),
     selected
   );
-  // useLabelSet(selected, 'a', setLinkedLabels);
-  // useLabelSet(selected, 's', setLinkedLabels);
-  // useLabelSet(selected, 'd', setLinkedLabels);
-
-  // console.log(spacePressed);
-  // console.log(selected);
-  // console.log(linkedLabels);
-  console.log({ urlMappedLabels, selected, labelList });
 
   const handleSave = () => {
     // based on keyPress
@@ -222,21 +169,6 @@ function PhotoPreviewer({ directory, photoList = [] }: props) {
         window.electronStore.directory.copyFileToDirectory(copySettings);
       }
     });
-
-    // const dirLength = directory.length;
-    // Object.keys(linkedLabels).forEach((filePath) => {
-    //   console.log('filepath', filePath);
-    //   if (linkedLabels[filePath].size) {
-    //     const copySettings = {
-    //       file: filePath.slice(dirLength + 1),
-    //       source: directory,
-    //       folders: [...linkedLabels[filePath]],
-    //     };
-    //     console.log('copySettings b', copySettings);
-
-    //     // window.electronStore.directory.copyFileToDirectory(copySettings);
-    //   }
-    // });
   };
 
   const colorsMap = useMemo(
@@ -298,7 +230,6 @@ function PhotoPreviewer({ directory, photoList = [] }: props) {
             save
           </button>
           {columnVirtualizer.getVirtualItems().map((virtualColumn) => {
-            // console.log(photoList[virtualColumn.index]);
             const url = `${directory}/${photoList[virtualColumn.index].name}`;
 
             // TODO: Check for width/height of preview img
@@ -330,7 +261,6 @@ function PhotoPreviewer({ directory, photoList = [] }: props) {
                   colors={colorsMap}
                 />
                 <FileImage url={url} />
-                {/* Column {virtualColumn.index} */}
               </div>
             );
           })}
