@@ -10,6 +10,7 @@ module.exports = {
     'import/no-import-module-exports': 'off',
     'import/prefer-default-export': 'off',
     'react/require-default-props': 'off',
+    'react-hooks/exhaustive-deps': 'off',
   },
   parserOptions: {
     ecmaVersion: 2020,

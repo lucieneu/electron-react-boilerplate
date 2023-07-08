@@ -1,14 +1,22 @@
-import { memo, useRef, useState, useEffect, useMemo } from 'react';
+import React, {
+  memo,
+  useRef,
+  useState,
+  useEffect,
+  useMemo,
+  ReactElement,
+} from 'react';
 import './PhotoPreviewer.css';
 // import { useVirtual } from '@tanstack/react-virtual';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useNavigate } from 'react-router-dom';
-import { useKeyPress, useKeysPress } from 'renderer/src/hooks/utils';
+import { useKeyPress } from 'renderer/src/hooks/utils';
 import { useAppSelector } from 'renderer/src/hooks/redux';
-import { selectCurrentList } from 'renderer/src/stores/labelSlice';
+import { Label, selectCurrentList } from 'renderer/src/stores/labelSlice';
+
+type FileImageType = { url: string; style: any };
 
 const FileImage = memo(
-  ({ url, style = { maxHeight: 82 } }: { url: string; style: any }) => {
+  ({ url, style = { maxHeight: 82 } }: FileImageType): ReactElement => {
     // console.log(url);
     return (
       <img
@@ -43,23 +51,30 @@ type props = {
 //   }, [pressed]);
 // };
 
-function useLabelKeyPressed(targetKeys: string[], filePath: string): boolean {
-  const [labelPressed, setLabelPressed] = useState({});
-  const filePathRef = useRef();
+type PressedLabels = {
+  [key: string]: Set<string>;
+};
+
+function useLabelKeyPressed(
+  targetKeys: string[],
+  filePath: string
+): PressedLabels {
+  const [labelPressed, setLabelPressed] = useState<PressedLabels>({});
+  const filePathRef = useRef<string | undefined>();
   filePathRef.current = filePath;
   // State for keeping track of whether key is pressed
   // If pressed key is our target key then set to true
   function downHandler({ key }: { key: string }): void {
-    const _filePath = filePathRef.current;
+    const newFilePath: string | undefined = filePathRef.current;
     // console.log('downHandler', filePath, targetKeys, _filePath);
 
-    if (targetKeys.includes(key)) {
-      setLabelPressed((prev) => {
-        if (!prev[_filePath]) prev[_filePath] = new Set();
-        console.log(prev[_filePath].has(key));
-        prev[_filePath].has(key)
-          ? prev[_filePath].delete(key)
-          : prev[_filePath].add(key);
+    if (newFilePath && targetKeys.includes(key)) {
+      setLabelPressed((prev: PressedLabels) => {
+        if (!prev[newFilePath]) prev[newFilePath] = new Set();
+        console.log(prev[newFilePath].has(key));
+
+        if (prev[newFilePath].has(key)) prev[newFilePath].delete(key);
+        else prev[newFilePath].add(key);
 
         return { ...prev };
       });
@@ -85,6 +100,7 @@ function useLabelKeyPressed(targetKeys: string[], filePath: string): boolean {
       window.removeEventListener('keydown', downHandler);
       // window.removeEventListener('keyup', upHandler);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty array ensures that effect is only run on mount and unmount
 
   return labelPressed;
@@ -107,6 +123,39 @@ function useLabelKeyPressed(targetKeys: string[], filePath: string): boolean {
 //   }, [pressed]);
 // };
 
+type LabelMapType = {
+  [key: string]: Label;
+};
+type ColorsMapType = {
+  [key: string]: Label[];
+};
+type LabelsLinkedProps = {
+  labels: Set<string> | undefined;
+  colors: ColorsMapType;
+};
+const LabelsLinked = ({ labels, colors }: LabelsLinkedProps) => {
+  const renderColors: string[] = [];
+  labels?.forEach((keyPressed: string) => {
+    colors[keyPressed].forEach((label: Label) => {
+      renderColors.push(label.color);
+    });
+  });
+
+  return renderColors.map((color: string, index) => (
+    <div
+      style={{
+        background: color,
+        width: 10,
+        height: 10,
+        borderRadius: 4,
+
+        position: 'absolute',
+        marginLeft: index * 10,
+      }}
+    />
+  ));
+};
+
 function PhotoPreviewer({ directory, photoList = [] }: props) {
   const spacePressed = useKeyPress(' ');
   const parentRef = useRef(null);
@@ -120,7 +169,7 @@ function PhotoPreviewer({ directory, photoList = [] }: props) {
     overscan: 5,
   });
 
-  const [selected, setSelected] = useState();
+  const [selected, setSelected] = useState<string>('');
 
   // const [linkedLabels, setLinkedLabels] = useState({});
   // const [indexWidth, setIndexWidth] = useState({});
@@ -153,24 +202,22 @@ function PhotoPreviewer({ directory, photoList = [] }: props) {
 
   const handleSave = () => {
     // based on keyPress
-    const labelMap = labelList.reduce((acc, curr) => {
+    const labelMap = labelList.reduce((acc: LabelMapType, curr) => {
       acc[curr.keyPress] = curr;
       return acc;
     }, {});
     const dirLength = directory.length;
     Object.keys(urlMappedLabels).forEach((filePath) => {
       if (urlMappedLabels[filePath].size) {
-        const folderNames = [];
+        const folderNames: string[] = [];
         urlMappedLabels[filePath].forEach((keyPressed) => {
           folderNames.push(labelMap[keyPressed].name);
         });
-        console.log('folderNames', folderNames);
         const copySettings = {
           file: filePath.slice(dirLength + 1),
           source: directory,
           folders: folderNames,
         };
-        console.log('copySettings a', copySettings);
 
         window.electronStore.directory.copyFileToDirectory(copySettings);
       }
@@ -194,7 +241,7 @@ function PhotoPreviewer({ directory, photoList = [] }: props) {
 
   const colorsMap = useMemo(
     () =>
-      labelList.reduce((acc, curr) => {
+      labelList.reduce((acc: ColorsMapType, curr) => {
         if (!acc[curr.keyPress]) acc[curr.keyPress] = [];
 
         acc[curr.keyPress].push(curr);
@@ -292,27 +339,5 @@ function PhotoPreviewer({ directory, photoList = [] }: props) {
     </div>
   );
 }
-const LabelsLinked = ({ labels, colors }) => {
-  const _colors = [];
-  labels?.forEach((keyPressed) => {
-    colors[keyPressed].forEach((label) => {
-      _colors.push(label.color);
-    });
-  });
-
-  return _colors.map((color, index) => (
-    <div
-      style={{
-        background: color,
-        width: 10,
-        height: 10,
-        borderRadius: 4,
-
-        position: 'absolute',
-        marginLeft: index * 10,
-      }}
-    />
-  ));
-};
 
 export { PhotoPreviewer, FileImage };
