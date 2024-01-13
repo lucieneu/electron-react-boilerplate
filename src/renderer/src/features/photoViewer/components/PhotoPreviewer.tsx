@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useMemo,
   ReactElement,
+  Fragment,
 } from 'react';
 import './PhotoPreviewer.css';
 // import { useVirtual } from '@tanstack/react-virtual';
@@ -12,14 +13,52 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { useKeyPress } from 'renderer/src/hooks/utils';
 import { useAppSelector } from 'renderer/src/hooks/redux';
 import { Label, selectCurrentList } from 'renderer/src/stores/labelSlice';
+import { AnimatePresence, motion } from 'framer-motion';
 
 type FileImageProps = { url: string; style: any };
 
 const FileImage = memo(
   ({ url, style = { maxHeight: 82 } }: FileImageProps): ReactElement => {
     return (
-      <img
-        style={style}
+      <motion.img
+        initial={{
+          x: '24vw',
+          y: '10vw',
+          opacity: 0,
+          scale: 0,
+
+          // rotateY: '-50deg',
+        }}
+        animate={{
+          // opacity: [0, 0.4, 0.75],
+          // scale: [0.75, 0.8, 0.85, 1],
+          // rotateY: '0deg',
+          y: '0vw',
+          opacity: 1,
+          zIndex: 1,
+          scale: 1,
+          x: '0vw',
+          transition: {
+            y: { delay: 0 },
+            opacity: { delay: 0, duration: 0.75 },
+            scale: { delay: 0 },
+          },
+        }}
+        exit={{
+          opacity: 0,
+          scale: [1, 0.85, 0.8, 0.75],
+          // opacity: 0,
+          // scale: 0.75,
+          x: '-24vw',
+          y: '10vw',
+          // rotateY: '50deg',
+          zIndex: 0,
+        }}
+        transition={{ duration: 0.5 }}
+        style={{
+          position: 'absolute',
+          ...style,
+        }}
         src={`localasset://${url}`}
         alt="url"
         onLoad={console.log}
@@ -104,7 +143,7 @@ const LabelsLinked = ({
         width: 10,
         height: 10,
         borderRadius: 4,
-
+        zIndex: 2,
         position: 'absolute',
         marginLeft: index * 10,
       }}
@@ -183,22 +222,40 @@ function PhotoPreviewer({ directory, photoList = [] }: props) {
   );
 
   return (
-    <div className="photoViewer">
+    <motion.div
+      className="photoViewer"
+      initial={{
+        background: 'var(--background-photoViewer-init)',
+      }}
+      animate={{
+        background: 'var(--background-photoViewer)',
+      }}
+    >
       <div
         style={{
           maxHeight: 'calc(100vh - 100px)',
           maxWidth: 'calc(100vw )',
+          position: 'relative',
+          display: 'flex',
+          height: '100%',
+          width: '100%',
+          alignContent: 'center',
+          justifyContent: 'center',
+          alignItems: 'center',
         }}
       >
-        {selected && (
-          <FileImage
-            url={selected}
-            style={{
-              maxHeight: '100%',
-              maxWidth: '100%',
-            }}
-          />
-        )}
+        <AnimatePresence>
+          {selected && (
+            <FileImage
+              key={selected}
+              url={selected}
+              style={{
+                maxHeight: '100%',
+                maxWidth: '100%',
+              }}
+            />
+          )}
+        </AnimatePresence>
       </div>
       <div
         ref={parentRef}
@@ -256,17 +313,17 @@ function PhotoPreviewer({ directory, photoList = [] }: props) {
                     url !== selected ? 'unset' : 'inset black 0 0 5px 1px',
                 }}
               >
+                <FileImage url={url} />
                 <LabelsLinked
                   labels={urlMappedLabels[url]}
                   colors={colorsMap}
                 />
-                <FileImage url={url} />
               </div>
             );
           })}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

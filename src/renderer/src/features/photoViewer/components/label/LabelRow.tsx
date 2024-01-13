@@ -5,7 +5,6 @@ import { Label, add, softDelete, update } from 'renderer/src/stores/labelSlice';
 import { Pencil } from 'tabler-icons-react';
 import './LabelRow.css';
 import { Button } from '@mantine/core';
-import { useLogger } from '@mantine/hooks';
 
 function ColorInput({
   hover,
@@ -65,7 +64,10 @@ function LabelRow({ label }: LabelRowProps): ReactElement {
 
   const disabled =
     !color || !name.length || !keyPress.length || (!hasChanges && isEdit);
+
+  // TODO: Del
   console.log({ color, name, keyPress });
+
   const handleAdd = () => {
     if (isCreate) {
       dispatch(

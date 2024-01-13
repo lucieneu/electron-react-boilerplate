@@ -10,7 +10,7 @@ interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
   selector?: string;
   submenu?: DarwinMenuItemConstructorOptions[] | Menu;
 }
-let a;
+let abba;
 
 export default class MenuBuilder {
   mainWindow: BrowserWindow;

@@ -48,13 +48,15 @@ function useKeyPress(targetKey: string): boolean {
   }, []); // Empty array ensures that effect is only run on mount and unmount
   return keyPressed;
 }
-function useKeysPress(targetKeys: string[]): boolean {
+function useKeysPress(targetKeys: string[]): string[] {
   // State for keeping track of whether key is pressed
-  const [keyPressed, setKeyPressed] = useState([]);
+  const [keyPressed, setKeyPressed] = useState<string[]>([]);
   // If pressed key is our target key then set to true
   function downHandler({ key }: { key: string }): void {
     if (targetKeys.includes(key)) {
-      setKeyPressed((prev) => (!prev.includes(key) ? [...prev, key] : prev));
+      setKeyPressed((prev: string[]) =>
+        !prev.includes(key) ? [...prev, key] : prev
+      );
     }
   }
   // If released key is our target key then set to false

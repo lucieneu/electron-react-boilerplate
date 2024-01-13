@@ -18,17 +18,19 @@
 import { useEffect, useState } from 'react';
 import { allowImgTypes } from 'renderer/src/config/static';
 import { useListener } from 'renderer/src/hooks/electron';
-import { useKeyPress } from 'renderer/src/hooks/utils';
-import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from 'renderer/src/hooks/redux';
 import { selectPath } from 'renderer/src/stores/directorySlice';
 import { PhotoPreviewer } from '../components/PhotoPreviewer';
 
 // window.electronStore.directory.fetch(`C:/Users/Lucien/Pictures/CV`);
 
+type DirectType = {
+  directory: any;
+  result: any;
+};
+
 function PhotoViewerPage() {
-  const [searchDir, setSearchDir] = useState();
-  const [direct, setDirect] = useState();
+  const [direct, setDirect] = useState<DirectType>();
   const path = useAppSelector(selectPath);
 
   useEffect(() => {
@@ -37,7 +39,7 @@ function PhotoViewerPage() {
     console.log('end', res);
   }, [path]);
 
-  useListener((directory) => {
+  useListener((directory: { result: { filter: any } }) => {
     console.log(
       'RECEIVED1',
       directory,
@@ -65,13 +67,13 @@ function PhotoViewerPage() {
   //     subscription();
   //   };
   // }, []);
-  console.log(searchDir, '- ', direct);
+  console.log(direct);
   // useEffect(() => {
   //   if (reset) navigate('/');
   // }, []);
+
   return (
     <div>
-      {/* <FileImage url={`${direct.directory}/${direct.result[0].name}`} /> */}
       {direct && (
         <PhotoPreviewer
           directory={direct.directory}
